@@ -154,12 +154,20 @@ def profile(username):
                     len(user.followers), [[u.id, u.username] for u in user.followers]
                     ],
                 'posts':[
-                    [post.id, post.filename] for post in posts
+                    [post.id, post.thumbnail] for post in posts
                 ]
             }
         )
 
-
+@views.route('/profile-files/<string:username>')
+def profile_files(username):
+    body=request.json
+    filenames=body['files'].split(',')
+    filepath = os.join(static_path,)
+    for filename in filenames:
+        with ZipFile(os.path.join(static_path, f'{username}.zip'), 'w') as zip:
+            zip.write((os.path.join(static_path,filename)))
+    return send_file(os.path.join(static_path, f'{username}.zip'))
 
 @check_token
 @views.route('/like/<int:post_id>' , methods=['POST'])
