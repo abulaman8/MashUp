@@ -1,3 +1,4 @@
+import os
 from flask import Blueprint, request, current_app, jsonify, make_response
 import jwt
 from functools import wraps
@@ -7,6 +8,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 
 auth = Blueprint("auth", __name__)
+
+
+
+
+static_path = 'C:\\Users\\5.413U14M4N\\Desktop\\python\\mashup\\mashup\\static\\'
+
+
+
 
 def check_token(f):
     @wraps(f)
@@ -24,7 +33,7 @@ def check_token(f):
 
 
 
-@auth.route('/auth/login', methods=['GET', 'POST'])
+@auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         data = request.json
@@ -52,6 +61,8 @@ def register():
         username = data['username']
         email = data['email']
         password = data['password']
+        
+
 
         if User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first():
             return make_response({'message': 'Account with same email or username already exists'}, 401)

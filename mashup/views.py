@@ -1,4 +1,6 @@
+
 from flask import Blueprint, request, make_response, current_app, send_file
+from matplotlib.image import thumbnail
 from .models import Post, Tag, User, Comment
 from . import db
 import os
@@ -7,6 +9,7 @@ import jwt
 import random
 from zipfile import ZipFile
 from PIL import Image
+import sys
 
 
 views = Blueprint("views", __name__)
@@ -20,28 +23,37 @@ def random_post():
 
 
 @check_token
-@views.route('/post')
+@views.route('/post', methods=['POST'])
 def post():
 
     token = request.headers.get('token')
     data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
     
     user_id = data['id']
+    caption=''
+    tags=[]
 
     if request.files:
         v = request.files['video']
         t=request.files['thumbnail']
         name, ext = v.filename.split('.')
         
-        new_post = Post(filename=v.filename, caption=caption, user_id=user_id)
         new_tags=[]
         data = request.json
-        caption = data['caption']
-        tags = data['tags'].split(',')
+        print(data)
+        caption = request.form.get('caption')
+        tags = request.form.get('tags').split(',')
+        new_post = Post(filename=v.filename, thumbnail=t.filename, caption=caption, user_id=user_id)
+
         try:
+            print('adding...', file=sys.stdout)
             db.session.add(new_post)
+            print('added to db', file=sys.stdout)
             db.session.commit()
+            print('committed to db', file=sys.stdout)
             v.save((os.path.join(static_path,v.filename)))
+            print('video saved', file=sys.stdout)
+            print(os.path.join(static_path,v.filename), file=sys.stdout)
             t.save((os.path.join(static_path,t.filename)))
             img = Image.open((os.path.join(static_path,t.filename)))
             img.save((os.path.join(static_path,f'{name}.png')))

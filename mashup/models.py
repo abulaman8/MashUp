@@ -38,7 +38,7 @@ class User(db.Model):
     liked = db.relationship('Post', secondary=user_like_rel, backref='likers')
     comment_rel = db.relationship('Comment', cascade='all, delete-orphan', backref='user')
     commented = db.relationship('Comment', secondary=user_comment_like_rel, backref='liked_by')
-
+    reply_rel = db.relationship('Reply', cascade='all, delete-orphan', backref='replied_by')
 
 class Post(db.Model):
     __tablename__ = 'post'
@@ -51,15 +51,17 @@ class Post(db.Model):
     date_created = db.Column(db.DateTime(timezone=True), default=func.now())
     tags = db.relationship('Tag', secondary=post_tag_rel, backref='posts')
     comment_rel = db.relationship('Comment', cascade='all, delete-orphan', backref='post')
+    reply_rel = db.relationship('Reply', cascade='all, delete-orphan', backref='post')
     
 
 
 class Comment(db.Model):
     __tablename__ = 'comment'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     comment_text = db.Column(db.String(280))
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+    reply_rel = db.relationship('Reply', cascade='all, delete-orphan', backref='comment')
 
 
 
@@ -70,4 +72,14 @@ class Tag(db.Model):
 
     def __repr__(self) -> str:
         return f'<tag: {self.tag_text}>'
+
+class Reply(db.Model):
+    __tablename__ = 'reply'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+    comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
+    reply_text = db.Column(db.String(280), nullable = False)
+
+
     
