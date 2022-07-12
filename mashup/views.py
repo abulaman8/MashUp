@@ -325,5 +325,61 @@ def delete_comment(comment_id):
         return make_response({
                 'message':'unauthorised access!'
             },401)
-        
+
+@check_token
+@views.route('/follow/<int:id>', methods=['POST'])
+def follow(id):
+    token = request.headers.get('token')
+    data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+    
+    user_id = data['id']
+    follower = User.query.filter_by(id=user_id).first()
+    user = User.query.filter_by(id=id).first()
+    if follower and user:
+        follower.following.append(user)
+        try:
+            db.session.commit()
+        except:
+            return make_response({
+                'message':'unable to follow'
+            }, 400)
+        return make_response({
+            'message':'follow successful'
+        },200)
+    else:
+        return make_response({
+            'message':'user doesn\'t exist'
+        },404)
+
+
+@check_token
+@views.route('/unfollow/<int:id>', methods=['POST'])
+def unfollow(id):
+    token = request.headers.get('token')
+    data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+    
+    user_id = data['id']
+    unfollower = User.query.filter_by(id=user_id).first()
+    user = User.query.filter_by(id=id).first()
+    if unfollower and user:
+        if unfollower in user.followers:
+            unfollower.following.remove(user)
+            try:
+                db.session.commit()
+            except:
+                return make_response({
+                    'message':'unable to unfollow'
+                }, 400)
+            return make_response({
+                'message':'unfollow successful'
+            },200)
+        else:
+            return make_response({
+                'message':'Not following in the first place'
+            }, 402)
+    else:
+        return make_response({
+            'message':'user doesn\'t exist'
+        },404)
+
 
