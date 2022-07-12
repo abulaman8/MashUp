@@ -18,7 +18,7 @@ DB_NAME = "mashup"
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'abulaman'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://postgres:mahrujan@localhost:5432/{DB_NAME}'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://postgres:password@localhost:5432/{DB_NAME}'
    
     
 
